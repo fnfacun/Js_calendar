@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>window7 日历</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<section id="wrap">
+    <div id="date">
+        <div id="clock-wrap">
+            <div id="clock">
+                <ul id="lattice-list"></ul>
+                <div id="box">
+                    <div class="dot"></div>
+                    <div class="hour"></div>
+                    <div class="min"></div>
+                    <div class="sec"></div>
+                </div>
+            </div>
+        </div>
+        <div id="now">
+            <p></p>
+            <p></p>
+        </div>
+    </div>
+    <div id="ctrls">
+        <a href="javascript:;" id="option">2019年3月</a>
+        <div id="arrows">
+            <a href="javscript:;" id="prev"></a>
+            <a href="javascript:;" id="next"></a>
+        </div>
+    </div>
+    <div id="main">
+        <div class="board"></div>
+    </div>
+</section>
+<script src="js/fat.js"></script>
+<script>      
+{
+    // 轮盘生成
+    let latticeList = $('#lattice-list');
+    let Roulette = () => {
+        let deg = 360 / 12;
+        let inner = "";
+        for (let i = 0; i < 12; i++) {
+            inner += `<li class="lattice" style="transform:rotate(${deg * i}deg)"></li>`;
+        };
+        return inner;
+    };
+    latticeList.innerHTML = Roulette();
+};
+{
+    // 指针旋转
+    let Roulette = () => {
+        let hourEl = $('.hour');
+        let minEl = $('.min');
+        let secEl = $('.sec');
+        let date = new Date();
+        let newSeconds = date.getSeconds();
+        let newMinutes = date.getMinutes() + newSeconds / 60;
+        let newHour = date.getHours() + newMinutes / 60;
+        let secondsDeg = 360 / 60 * newSeconds;
+        let minutesDeg = 360 / 60 * newMinutes;
+        let hourDeg = 360 / 12 * newHour;
+        css(hourEl, 'rotate', hourDeg);
+        css(minEl, 'rotate', minutesDeg);
+        css(secEl, 'rotate', secondsDeg);
+    };
+    Roulette();
+    setInterval(Roulette, 1000);
+}
+{
+    // 补零
+    let RepairZero = (nub) => {
+        return nub < 10 ? "0" + nub : "" + nub;
+    };
+    //  显示当前时间
+    let now = $('#now');
+    let currentDate = () => {
+        let date = new Date();
+        let newYaer = date.getFullYear();
+        let newMonth = RepairZero(date.getMonth() + 1);
+        let newDate = RepairZero(date.getDate());
+        let newDay = date.getDay();
+        let dayArr = ['日', '一', '二', '三', '四', '五', '六'];
+        return `<p>${newYaer}年${newMonth}月${newDate}日</p><p>星期${dayArr[newDay]}</p>`;
+    };
+    now.innerHTML = currentDate();
+}
+{
+    let board = $('.board');
+    let main = $('#main');
+    let option = $('#option');
+    let next = $('#next');
+    let prev = $('#prev');
+    // 当前时间
+    let date = new Date();
+    let newYear = date.getFullYear();
+    let newMonth = date.getMonth();
+    let newDate = date.getDate();
+    // 目标时间
+    let thisYear = newYear;
+    let thisMonth = newMonth;
+    let thisDate = newDate;
+    let optionType = 0;
+    let nextOptionTpye = null;
+    option.addEventListener('click',(e)=>{
+        nextOptionTpye = optionType + 1;
+        if (nextOptionTpye > 2) {
+            optionType = 2;
+        }else{
+            createTabView();
+        }
+    });
+    next.addEventListener('click',(e)=>{
+        upDownTab(1);
+    });
+    prev.addEventListener('click',(e)=>{
+        upDownTab(-1);
+    });
+    // 更新上下切换时间
+    let getDate = () => {
+        let date = new Date(newYear,newMonth);
+        newYear = date.getFullYear();
+        newMonth = date.getMonth();
+    };     
+    getDate();
+    let upDownTab = (dir) => {
+        if (dir > 0) {
+            main.innerHTML = `<div class="topOut board"></div>
+                              <div class="board toTop"></div>`;
+            let board = $('.board');
+            switch (optionType) {
+                case 0:
+                    createDateView(board[0], newYear, newMonth);
+                    newMonth++;
+                    getDate();
+                    createDateView(board[1], newYear, newMonth);
+                    break;
+                case 1:
+                    createMonthView(board[0], newYear);
+                    newYear++;
+                    getDate();
+                    createMonthView(board[1], newYear);
+                    break;
+                case 2:
+                    createYearView(board[0], newYear);
+                    newYear += 10;
+                    getDate();
+                    createYearView(board[1], newYear);
+                    break;
+            };
+        } else {
+            main.innerHTML = `<div class="bottomOut board"></div>
+                        <div class="board toBottom"></div>`;
+            let board = $('.board');
+            switch (optionType) {
+                case 0:
+                    createDateView(board[0], newYear, newMonth);
+                    newMonth--;
+                    getDate();
+                    createDateView(board[1], newYear, newMonth);
+                    break;
+                case 1:
+                    createMonthView(board[0], newYear);
+                    newYear--;
+                    getDate();
+                    createMonthView(board[1], newYear);
+                    break;
+                case 2:
+                    createYearView(board[0], newYear);
+                    newYear -= 10;
+                    getDate();
+                    createYearView(board[1], newYear);
+                    break;
+            };
+        }
+        createOptionView();
+    };
+    // 显示顶部切换日期
+    let createOptionView = () => {
+        switch(optionType){
+            case 0 :
+                option.innerHTML = newYear + `年` + (newMonth + 1) + `月`;
+                break;
+            case 1:
+                option.innerHTML = newYear + `年`;
+                break;
+            case 2:
+                let startDate = Math.floor(newYear / 10) * 10; // 开始时间
+                let startEnd = startDate + 9;
+                option.innerHTML = startDate + `-` + startEnd;
+                break;
+        };
+    };
+    createOptionView();
+    // 日期淡入淡出
+    let createTabView = () => {
+        if (nextOptionTpye > optionType) {
+            main.innerHTML = `<div class="toHide board"></div>
+                              <div class="toShow board"></div>`;
+            let board = $('.board');
+            switch(nextOptionTpye){
+                case 1 : 
+                    createDateView(board[0],newYear,newMonth); 
+                    createMonthView(board[1],newYear); 
+                    optionType = nextOptionTpye;
+                    break; 
+                case 2 :
+                    createMonthView(board[0],newYear,newMonth); 
+                    createYearView(board[1],newYear);
+                    optionType = nextOptionTpye;
+                    break;
+            };
+        }else{
+            main.innerHTML = `<div class="toBlow board"></div>
+                              <div class="toNarrow board"></div>`;
+            let board = $('.board');
+            switch(nextOptionTpye){
+                case 1 : createYearView
+                    createYearView(board[0],newYear,newMonth); 
+                    createMonthView(board[1],newYear); 
+                    optionType = nextOptionTpye;
+                    break; 
+                case 0 :
+                    createMonthView(board[0],newYear); 
+                    createDateView(board[1],newYear,newMonth);
+                    optionType = nextOptionTpye;
+                    break;
+            };
+        }
+        createOptionView();
+    };
+    // 渲染日期视图
+    let createDateView = (board, year, month) => {
+        // 渲染星期视图
+        const data = [{title : '日'},{title : '一'},{title : '二'},{title : '三'},{title : '四' },{title : '五'},{title : '六'}];
+        let weekDay = () => {
+            return `<ul class="week">${data.map(item=>{
+                return `<li class="date-cell">${item.title}</li>`;
+            }).join("")}</ul>`;
+        };
+        let lastMonth = new Date(year, month, 0).getDate();   // 上个月最后一天
+        let firstDay = new Date(year, month, 1).getDay(); // 这个月第一天
+        let lastDate = new Date(year, month + 1, 0).getDate(); // 最后一天
+        let dateUl = `<ul class="date">`;
+        for (let i = 0; i < 42; i++) {
+            if (firstDay > i) {
+                dateUl += `<li class="date-cell other-date">${lastMonth - (firstDay - i - 1)}</li>`
+            } else if (lastDate > i - firstDay) {
+                if (year == thisYear && month == thisMonth && i - firstDay + 1 == thisDate) {
+                    dateUl += `<li class="date-cell active">${i - firstDay + 1}</li>`;
+                } else {
+                    dateUl += `<li class="date-cell">${i - firstDay + 1}</li>`;
+                };
+            } else {
+                dateUl += `<li class="date-cell other-date">${i - (firstDay+lastDate) + 1}</li>`
+            };
+        };
+        dateUl += `</ul>`;
+        board.innerHTML = weekDay() + dateUl;
+    };
+    //  渲染月份视图
+    let createMonthView = (board,year) => {
+        let monthUl = `<ul class="month">`;
+        for (let i = 0; i < 12; i++) {
+            if(thisYear==year&&thisMonth==i){
+                monthUl += `<li class="month-cell active">${i+1}月</li>`;
+            }else{
+                monthUl += `<li class="month-cell">${i+1}月</li>`;
+            }
+        };
+        monthUl += `</ul>`;
+        board.innerHTML = monthUl;
+        let li = board.querySelectorAll('li');
+        li.forEach(element => {
+            element.addEventListener('click',(e)=>{
+                newMonth = parseInt(element.innerHTML) - 1;
+                nextOptionTpye = 0;
+                createTabView(); 
+            });
+        });
+    };
+    // 渲染年份视图
+    let createYearView = (board,year) => {
+        let date = new Date();
+        let dateYear = Math.floor(date.getFullYear() / 10) * 10; // 开始时间
+        let yearUl = `<ul class="year">`;
+        for (let i = 0; i < 16; i++) {
+            if (i < 4) {
+                yearUl += `<li class="year-cell other-yaer">${dateYear - (4 - i)}</li>`
+            } else if (i < 14) {
+                if(thisYear==dateYear - (4 - i)){
+                    yearUl += `<li class="year-cell active">${dateYear - (4 - i)}</li>`;
+                }else{
+                    yearUl += `<li class="year-cell">${dateYear - (4 - i)}</li>`;
+                };
+            }else{
+                yearUl += `<li class="year-cell other-yaer">${dateYear - (4 - i)}</li>`
+            }
+        };
+        yearUl += `</ul>`;
+        board.innerHTML = yearUl;
+        let li = board.querySelectorAll('li');
+        li.forEach(element => {
+            element.addEventListener('click',(e)=>{
+                newYear = Number(element.innerHTML);
+                nextOptionTpye = 1;
+                createTabView(); 
+            });
+        });
+    };
+    createDateView(board,newYear,newMonth);
+}
+</script>    
+</body>
+</html>
