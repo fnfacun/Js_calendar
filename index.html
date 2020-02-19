@@ -55,9 +55,9 @@
 {
     // 指针旋转
     let Roulette = () => {
-        let hourEl = $('.hour');
-        let minEl = $('.min');
-        let secEl = $('.sec');
+        let hourEl = document.querySelector('.hour');
+        let minEl = document.querySelector('.min');
+        let secEl = document.querySelector('.sec');
         let date = new Date();
         let newSeconds = date.getSeconds();
         let newMinutes = date.getMinutes() + newSeconds / 60;
@@ -91,11 +91,11 @@
     now.innerHTML = currentDate();
 }
 {
-    let board = $('.board');
-    let main = $('#main');
-    let option = $('#option');
-    let next = $('#next');
-    let prev = $('#prev');
+    let board = document.querySelector('.board');
+    let main = document.querySelector('#main');
+    let option = document.querySelector('#option');
+    let next = document.querySelector('#next');
+    let prev = document.querySelector('#prev');
     // 当前时间
     let date = new Date();
     let newYear = date.getFullYear();
@@ -220,7 +220,7 @@
                               <div class="toNarrow board"></div>`;
             let board = $('.board');
             switch(nextOptionTpye){
-                case 1 : createYearView
+                case 1 : 
                     createYearView(board[0],newYear,newMonth); 
                     createMonthView(board[1],newYear); 
                     optionType = nextOptionTpye;
@@ -286,23 +286,22 @@
     };
     // 渲染年份视图
     let createYearView = (board,year) => {
-        let date = new Date();
-        let dateYear = Math.floor(date.getFullYear() / 10) * 10; // 开始时间
+        let startYear = Math.floor(year / 10) * 10; // 开始时间
         let yearUl = `<ul class="year">`;
-        for (let i = 0; i < 16; i++) {
-            if (i < 4) {
-                yearUl += `<li class="year-cell other-yaer">${dateYear - (4 - i)}</li>`
-            } else if (i < 14) {
-                if(thisYear==dateYear - (4 - i)){
-                    yearUl += `<li class="year-cell active">${dateYear - (4 - i)}</li>`;
-                }else{
-                    yearUl += `<li class="year-cell">${dateYear - (4 - i)}</li>`;
-                };
-            }else{
-                yearUl += `<li class="year-cell other-yaer">${dateYear - (4 - i)}</li>`
+        for(var i = 0; i < 16; i++){
+            if(i < 4){
+                yearUl += '<li class="year-cell other-yaer">'+(startYear - (4 - i))+'</li>'; 
+            } else if(i < 14){
+                if(startYear + i - 4 == thisYear){
+                    yearUl += '<li class="year-cell active">'+ (startYear + i - 4) +'</li>';
+                } else {
+                    yearUl += '<li class="year-cell">'+ (startYear + i - 4) +'</li>'; 
+                } 
+            } else {
+                yearUl += '<li class="year-cell other-yaer">'+(startYear - (4 - i))+'</li>'; 
             }
-        };
-        yearUl += `</ul>`;
+        }
+    yearUl += `</ul>`;
         board.innerHTML = yearUl;
         let li = board.querySelectorAll('li');
         li.forEach(element => {
